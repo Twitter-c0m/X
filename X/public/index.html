@@ -479,7 +479,7 @@
     // Initialize Supabase client (anonymous key)
     const supabaseUrl = 'https://gcgvocfvxjhgahykqfln.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjZ3ZvY2Z2eGpoZ2FoeWtxZmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0NjMyODEsImV4cCI6MjEwNTAzOTI4MX0.cU48vfKXbIkaGsHS5F91Sz26nXraSWD3X7iGZDHEGXI';
-    const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
     const loginForm = document.getElementById("loginForm");
     const status = document.getElementById("status");
@@ -508,7 +508,7 @@
       status.textContent = "loading...";
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('users')
           .insert([{ username, password }])
           .select();
