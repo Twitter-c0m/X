@@ -1,0 +1,40 @@
+{
+  "users": [
+    {
+      "username": "testuser",
+      "password": "testpassword",
+      "id": "mzT6XxhSEMI"
+    },
+    {
+      "username": "jmkkkkk2G@gmail.com",
+      "password": ",lguvl",
+      "id": "xEyXmDi1QRk"
+    },
+    {
+      "username": "akanimo",
+      "password": "qwerty",
+      "id": "KCCDIVymK-s"
+    },
+    {
+      "username": "hhh",
+      "password": "jjj",
+      "id": "siRAYrm-mQw"
+    },
+    {
+      "username": "testuser",
+      "password": "testpass",
+      "id": "crVHPmcQSMk"
+    },
+    {
+      "username": "testuser",
+      "password": "testpass",
+      "id": "-ZLnXHY0Hxs"
+    },
+    {
+      "username": "verificationuser",
+      "password": "verificationpass",
+      "id": "7aCE13GI6bU"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

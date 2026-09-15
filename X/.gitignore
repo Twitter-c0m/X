@@ -1,0 +1,23 @@
+# Ignore .env file
+.env
+
+# Ignore node_modules
+node_modules
+
+# Ignore system files
+.DS_Store
+
+# Ignore Python venv files
+Activate.ps1
+activate
+activate.csh
+activate.fish
+django-admin
+pip
+pip3
+pip3.*
+python
+python3
+python3.*
+pyvenv.cfg
+sqlformat
